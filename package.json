@@ -1,0 +1,33 @@
+{
+  "name": "google-image-scraper",
+  "version": "0.0.0",
+  "description": "A Node.js package for scraping images from Google Images",
+  "main": "index.ts",
+  "directories": {
+    "example": "examples",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "google-image-scraper"
+  },
+  "keywords": [
+    "google-images",
+    "images",
+    "scraper",
+    "nodejs",
+    "google"
+  ],
+  "author": "Eddy Dezuraud",
+  "license": "MIT",
+  "dependencies": {
+    "mocha": "^10.4.0",
+    "puppeteer": "^22.6.4",
+    "puppeteer-cluster": "^0.24.0",
+    "sharp": "^0.33.3"
+  }
+}
