@@ -1,2 +1,2 @@
-# google-image-scraper
-Scrape images from Google Images with ease using this customizable Node.js package.
+# google-images-scraper
+A Node.js package for scraping images from Google Images
