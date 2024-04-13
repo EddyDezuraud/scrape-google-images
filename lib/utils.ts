@@ -1,13 +1,22 @@
 import sharp from 'sharp';
-import puppeteer from 'puppeteer';
+import puppeteer, { Page} from 'puppeteer';
 
-const isScrollable = async (page: puppeteer.Page) => {
+const launchBrowserAndOpenPage = async (url: string) => {
+  const browser = await puppeteer.launch({headless: true});
+  const page = await browser.newPage();
+
+  await page.goto(url);
+
+  return page;
+}
+
+const isScrollable = async (page: Page) => {
   return page.evaluate(() => {
       return document.querySelector("#islmp input[type='button']") !== null;
     });
 };
 
-const isButtonVisible = async (page: puppeteer.Page) => {
+const isButtonVisible = async (page: Page) => {
   return page.evaluate(() => {
       function isVisible(e: HTMLElement) {
           return !!(e.offsetWidth || e.offsetHeight || e.getClientRects().length);
@@ -17,14 +26,41 @@ const isButtonVisible = async (page: puppeteer.Page) => {
   });
 };
 
-const scrollToEnd = async (page: puppeteer.Page) => {
+const scrollToEnd = async (page: Page) => {
   const isScroll = await isScrollable(page);
 
   if (!isScroll) {
       return;
   }
 
-  const buttonIsVisible = await isButtonVisible(page)
+  return await isButtonVisible(page)
+};
+
+const getImageData = async (imgSrc: string): Promise<{ metadata: sharp.Metadata, imgBuffer: Buffer }> => {
+  try {
+    let imgBuffer = Buffer.from(imgSrc, 'base64');
+
+    // deal with url images and base64 images
+    if (imgSrc.startsWith('http')) {
+      const response = await fetch(imgSrc);
+      const buffer = await response.arrayBuffer();
+      imgBuffer = Buffer.from(buffer);
+    } else if (imgSrc.startsWith('data:image')) {
+      const uri = imgSrc.split(';base64,').pop();
+      if (!uri) {
+        throw new Error('Invalid base64 image');
+      }
+      imgBuffer = Buffer.from(uri, 'base64');
+    }
+
+    const metadata = await sharp(imgBuffer).metadata();
+
+    return {metadata, imgBuffer}
+    
+  } catch (err) {
+    console.error(imgSrc, err);
+    throw err;
+  }
 };
 
 const isPicture = async (imgSrc: string) => {
@@ -93,5 +129,7 @@ const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 export {
     isPicture,
     sleep,
-    scrollToEnd
+    scrollToEnd,
+    launchBrowserAndOpenPage,
+    getImageData
 };

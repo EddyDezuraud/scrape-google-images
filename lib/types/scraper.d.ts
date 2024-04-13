@@ -1,3 +1,5 @@
+import { FormatEnum } from 'sharp';
+
 declare type ImgType = '' | 'clipart' | 'face' | 'lineart' | 'stock' | 'photo' | 'animated';
 
 declare type FileType = "" | "jpg" | "gif" | "png" | "bmp" | "svg" | "webp" | "ico" | "craw";
@@ -10,8 +12,10 @@ declare type Imgar = "" | "t|xt" | "s" | "w" | "xw";
 
 declare type AsRights = "" | "cl" | "ol";
 
+declare type SharpFormat = 'jpeg' | 'png' | 'webp' | 'gif' | 'svg' | ''; 
 
-interface pickOptions {
+
+interface PickOptions {
     limit?: number;
     imgSize?: ImgSize;
     imgtype?: ImgType;
@@ -21,6 +25,22 @@ interface pickOptions {
     safe?: boolean;
     siteSearch?: string;
     rights?: AsRights;
+    random?: boolean;
+    metadata?: boolean;
+    imgData?: boolean;
 }
 
-export { pickOptions };
+
+interface PickResult {
+    src: string;
+    imgData: string;
+    description: string;
+    source: string;
+    metadata: {
+        width: number;
+        height: number;
+        format?: FormatEnum;
+    }
+}
+
+export { PickOptions, PickResult };
