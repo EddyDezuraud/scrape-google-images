@@ -80,11 +80,28 @@ const pick = async (query: string, options?: PickOptions): Promise<PickResult[]>
         elements = elements.slice(0, queryOptions.limit || 10);
     }
 
+    let index = 0;
+
+    // page.on('console', async (msg) => {
+    //     const msgArgs = msg.args();
+    //     for (let i = 0; i < msgArgs.length; ++i) {
+    //       console.log(await msgArgs[i].jsonValue());
+    //     }
+    //   });
+
     for (const element of elements) {
-        await element.click();
-        await sleep(200);
+
+        index = index + 1;
+            
+        await Promise.all([
+            page.waitForNetworkIdle(),
+            element.click(),
+        ])
+
         const src = await page.evaluate(() => {
+
             const img = document.querySelector('img.iPVvYb') as HTMLImageElement;
+
             const source = document.querySelector('a.Hnk30e.indIKd') as HTMLAnchorElement;
 
             if (!img) {
@@ -97,7 +114,6 @@ const pick = async (query: string, options?: PickOptions): Promise<PickResult[]>
                 };
             }
 
-
             return {
                 imgData: '',
                 src: img.src,
@@ -106,9 +122,9 @@ const pick = async (query: string, options?: PickOptions): Promise<PickResult[]>
                 metadata: {}
             };
         }) as PickResult;
+
         
         if (src.src !== '') {
-
             if (queryOptions.metadata || queryOptions.imgData) {
                 const {metadata, imgBuffer} = await getImageData(src.src);
 

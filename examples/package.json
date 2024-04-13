@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "nodemon index.ts"
+    "start": "nodemon index.ts --watch ../lib"
   },
   "dependencies": {
     "express": "^4.19.2",
