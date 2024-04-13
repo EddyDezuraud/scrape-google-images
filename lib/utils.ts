@@ -1,4 +1,31 @@
 import sharp from 'sharp';
+import puppeteer from 'puppeteer';
+
+const isScrollable = async (page: puppeteer.Page) => {
+  return page.evaluate(() => {
+      return document.querySelector("#islmp input[type='button']") !== null;
+    });
+};
+
+const isButtonVisible = async (page: puppeteer.Page) => {
+  return page.evaluate(() => {
+      function isVisible(e: HTMLElement) {
+          return !!(e.offsetWidth || e.offsetHeight || e.getClientRects().length);
+      }
+      const button = document.querySelector("#islmp input[type='button']");
+      return button ? isVisible(button as HTMLElement) : false;
+  });
+};
+
+const scrollToEnd = async (page: puppeteer.Page) => {
+  const isScroll = await isScrollable(page);
+
+  if (!isScroll) {
+      return;
+  }
+
+  const buttonIsVisible = await isButtonVisible(page)
+};
 
 const isPicture = async (imgSrc: string) => {
     // analyser si l'image est une photo ou non en se basant sur le contenu de l'image nombre de couleurs, etc.
@@ -65,5 +92,6 @@ const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 export {
     isPicture,
-    sleep
+    sleep,
+    scrollToEnd
 };
