@@ -42,7 +42,7 @@ The `pick` function accepts an optional `options` object with the following prop
 | `imgSize`    | `string`  | `''`    | Filter images by size (e.g., `'l'`, `'m'`, `'i'`, `'qsvga'`, `'vga'`, `'svga'`, `'xga'`). |
 | `imgtype`    | `string`  | `''`    | Filter images by type (e.g., `'clipart'`, `'face'`, `'lineart'`, `'stock'`, `'photo'`).   |
 | `imgColor`   | `string`  | `''`    | Filter images by color (e.g., `'mono'`, `'gray'`, `'color'`, `'trans'`).                  |
-| `imgar`      | `string`  | `''`    | Filter images by aspect ratio (e.g., \`'t                                                 |
+| `imgar`      | `string`  | `''`    | Filter images by aspect ratio (e.g., `'t'`, `'s'`, `'w'`, `'xw'`)                         |
 | `fileType`   | `string`  | `''`    | Filter images by file type (e.g., `'jpg'`, `'gif'`, `'png'`, `'bmp'`, `'svg'`, `'webp'`). |
 | `safe`       | `boolean` | `false` | Enable safe search filter.                                                                |
 | `siteSearch` | `string`  | `''`    | Search for images from a specific website.                                                |
