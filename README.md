@@ -38,7 +38,7 @@ The `pick` function accepts an optional `options` object with the following prop
 
 | Option       | Type      | Default | Description                                                                               |
 | ------------ | --------- | ------- | ----------------------------------------------------------------------------------------- |
-| `limit`      | `number`  | `10`    | Maximum number of images to retrieve.                                                     |
+| `limit`      | `number`  | `10`    | Maximum number of images to retrieve. (max: 100)                                          |
 | `imgSize`    | `string`  | `''`    | Filter images by size (e.g., `'l'`, `'m'`, `'i'`, `'qsvga'`, `'vga'`, `'svga'`, `'xga'`). |
 | `imgtype`    | `string`  | `''`    | Filter images by type (e.g., `'clipart'`, `'face'`, `'lineart'`, `'stock'`, `'photo'`).   |
 | `imgColor`   | `string`  | `''`    | Filter images by color (e.g., `'mono'`, `'gray'`, `'color'`, `'trans'`).                  |
