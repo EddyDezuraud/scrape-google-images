@@ -1,4 +1,4 @@
-# Google Images Scraper
+# Scrape Google Images
 
 A TypeScript library for scraping images from Google Images using Puppeteer.
 
@@ -7,12 +7,12 @@ A TypeScript library for scraping images from Google Images using Puppeteer.
 To use this library, you'll need Node.js installed on your machine. Then, you can install it via npm:
 
 ```bash
-npm install google-images-scraper
+npm install scrape-google-images
 ```
 
 ## Usage
 ```typescript
-import { scrapeImages } from 'google-images-scraper';
+import { scrapeImages } from 'scrape-google-images';
 
 const query = 'cats';
 const options = {
