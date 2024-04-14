@@ -1,6 +1,6 @@
 {
   "name": "scrape-google-images",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A Node.js package for scraping images from Google Images",
   "main": "index.ts",
   "directories": {
