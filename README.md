@@ -73,5 +73,6 @@ The `metadata` object has the following properties:
 | `height` | `number`           | The height of the image. |
 | `format` | `sharp.FormatEnum` | The format of the image. |
 
+
 ## Licence
 This library is licensed under the MIT License. See the LICENSE file for more information.
