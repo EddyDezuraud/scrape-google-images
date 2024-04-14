@@ -64,6 +64,7 @@ The `pick` function returns a Promise that resolves to an array of `PickResult` 
 | `source`      | `string` | The URL of the source website.                |
 | `metadata`    | `object` | The image metadata (if `metadata` is true).   |
 
+\
 The `metadata` object has the following properties:
 
 | Property | Type               | Description              |
