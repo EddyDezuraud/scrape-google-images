@@ -25,8 +25,6 @@ const pick = async (query: string, options?: PickOptions): Promise<PickResult[]>
 
     const url = `https://www.google.com/search?as_st=y&as_q=${query}&as_epq=&as_oq=&as_eq=&imgsz=${queryOptions.imgSize}&imgar=${queryOptions.imgar}&imgcolor=${queryOptions.imgColor}&imgtype=${queryOptions.imgtype}&cr=&as_sitesearch=${queryOptions.siteSearch}&as_filetype=${queryOptions.imgtype}&tbs=${queryOptions.rights}&udm=2`;
 
-    const results: PickResult[] = [];
-
     const page = await launchBrowserAndOpenPage(url);
 
     await page.goto(url, { waitUntil: 'networkidle0' });
@@ -45,86 +43,51 @@ const pick = async (query: string, options?: PickOptions): Promise<PickResult[]>
     await scrollToEnd(page);
 
     // click on every .F0uyec element to open the image preview and get the src of the image preview (img.iPVvYb)
-    let elements = await page.$$('.F0uyec');
+    let elements = await page.$$('.ob5Hkd');
 
     if (options && options.random) {
         elements = elements.sort(() => 0.5 - Math.random());
     }
 
-    if (queryOptions && queryOptions.imgtype === 'photo') {
-        const photosElements: ElementHandle[] = [];
+    page.on('console', async (msg) => {
+        const msgArgs = msg.args();
+        for (let i = 0; i < msgArgs.length; ++i) {
+          console.log(await msgArgs[i].jsonValue());
+        }
+    });
 
-        for (let element of elements) {
+    const results: PickResult[] = [];
+
+    for (let element of elements) {
+        if (queryOptions.limit && results.length >= queryOptions.limit) break;
+
+        const imgSrc = await element.$eval('img', (img: HTMLImageElement) => img.src);
+
+        if(!imgSrc) continue;
+        if(queryOptions.imgtype === 'photo' && !isPicture(imgSrc)) continue;
 
 
-            const imgSrc = await element.$eval('img', (img: HTMLImageElement) => {
+        element.click();
+        await page.waitForSelector('.RfPPs', { visible: true });
+        await page.waitForNetworkIdle();
 
+        const src = await page.evaluate(() => {
+            const img = document.querySelector('img.sFlh5c.pT0Scc.iPVvYb') as HTMLImageElement;
+            const source = document.querySelector('a.Hnk30e.indIKd') as HTMLAnchorElement;
+
+            if(img) {
                 return {
                     imgData: '',
                     src: img.src,
                     description: img.getAttribute('aria-label') || img.alt || img.title || '',
-                    metadata: {}
-                };
-            }) as PickResult;
-
-            if (imgSrc && await isPicture(imgSrc.src)) {
-                photosElements.push(element);
-                if (photosElements.length >= (queryOptions.limit || 10)) {
-                    break;
-                }
-            }
-        }
-
-        elements = photosElements;
-    } else {
-        elements = elements.slice(0, queryOptions.limit || 10);
-    }
-
-    let index = 0;
-
-    // page.on('console', async (msg) => {
-    //     const msgArgs = msg.args();
-    //     for (let i = 0; i < msgArgs.length; ++i) {
-    //       console.log(await msgArgs[i].jsonValue());
-    //     }
-    //   });
-
-    for (const element of elements) {
-
-        index = index + 1;
-            
-        await Promise.all([
-            page.waitForNetworkIdle(),
-            element.click(),
-        ])
-
-        const src = await page.evaluate(() => {
-
-            const img = document.querySelector('img.iPVvYb') as HTMLImageElement;
-
-            const source = document.querySelector('a.Hnk30e.indIKd') as HTMLAnchorElement;
-
-            if (!img) {
-                return {
-                    imgData: '',
-                    src: '',
-                    description: '',
-                    source: '',
+                    source: source ? source.href : '',
                     metadata: {}
                 };
             }
-
-            return {
-                imgData: '',
-                src: img.src,
-                description: img.getAttribute('aria-label') || img.alt || img.title || '',
-                source: source ? source.href : '',
-                metadata: {}
-            };
         }) as PickResult;
 
-        
-        if (src.src !== '') {
+
+        if (src && src.src !== '') {
             if (queryOptions.metadata || queryOptions.imgData) {
                 const {metadata, imgBuffer} = await getImageData(src.src);
 
@@ -141,7 +104,9 @@ const pick = async (query: string, options?: PickOptions): Promise<PickResult[]>
 
             results.push(src);
         }
+        
     }
+    
     return results;
 };
 
