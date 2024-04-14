@@ -17,7 +17,7 @@ const defaultOptions: PickOptions = {
     imgData: false
 };
 
-const pick = async (query: string, options?: PickOptions): Promise<PickResult[]> => {
+const scrapeImages = async (query: string, options?: PickOptions): Promise<PickResult[]> => {
     if (!query) throw new Error('Query is required');
     if (options && options.limit && options.limit > 100) throw new Error('Limit must be less than 100');
 
@@ -110,5 +110,5 @@ const pick = async (query: string, options?: PickOptions): Promise<PickResult[]>
     return results;
 };
 
-export { pick };
+export { scrapeImages };
 
