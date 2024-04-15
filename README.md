@@ -2,6 +2,10 @@
 
 A TypeScript library for scraping images from Google Images using Puppeteer.
 
+[![npm](https://img.shields.io/npm/v/scrape-google-images)](https://www.npmjs.com/package/scrape-google-images)
+[![GitHub](https://img.shields.io/github/stars/EddyDezuraud/scrape-google-images)](https://github.com/EddyDezuraud/scrape-google-images)
+
+
 ## Installation
 
 To use this library, you'll need Node.js installed on your machine. Then, you can install it via npm:
