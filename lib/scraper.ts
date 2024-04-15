@@ -1,7 +1,6 @@
-import sharp, { FormatEnum } from 'sharp';
-import { sleep, isPicture, scrollToEnd, launchBrowserAndOpenPage, getImageData } from './utils';
+import { FormatEnum } from 'sharp';
+import { isPicture, scrollToEnd, launchBrowserAndOpenPage, getImageData } from './utils';
 import { PickOptions, PickResult } from './types/scraper';
-import { ElementHandle } from 'puppeteer';
 
 const defaultOptions: PickOptions = {
     limit: 10,
