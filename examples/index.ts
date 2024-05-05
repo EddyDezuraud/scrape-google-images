@@ -1,4 +1,4 @@
-import { pick } from '../index';
+import { scrapeImages } from '../index';
 
 //node js api with express to get lib pick elements
 import express from 'express';
@@ -11,7 +11,7 @@ app.get('/', async (req: express.Request, res: express.Response) => {
         return res.status(400).json({ error: 'Query is required' });
     }
 
-    const results = await pick(req.query.q as string);
+    const results = await scrapeImages(req.query.q as string);
     res.json(results);
 });
 
