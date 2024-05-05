@@ -17,14 +17,14 @@ declare type SharpFormat = 'jpeg' | 'png' | 'webp' | 'gif' | 'svg' | '';
 
 interface PickOptions {
     limit?: number;
-    imgSize?: ImgSize;
-    imgtype?: ImgType;
-    imgColor?: ImgColor;
-    imgar?: Imgar;
-    fileType?: FileType;
+    imgSize?: string | ImgSize;
+    imgtype?: string | ImgType;
+    imgColor?: string | ImgColor;
+    imgar?: string | Imgar;
+    fileType?: string | FileType;
     safe?: boolean;
     siteSearch?: string;
-    rights?: AsRights;
+    rights?: string | AsRights;
     random?: boolean;
     metadata?: boolean;
     imgData?: boolean;
