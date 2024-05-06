@@ -31,7 +31,7 @@ const scrapeImages = (query, options) => __awaiter(void 0, void 0, void 0, funct
         throw new Error('Limit must be less than 100');
     const queryOptions = Object.assign(Object.assign({}, defaultOptions), (options || {}));
     const url = `https://www.google.com/search?as_st=y&as_q=${query}&as_epq=&as_oq=&as_eq=&imgsz=${queryOptions.imgSize}&imgar=${queryOptions.imgar}&imgcolor=${queryOptions.imgColor}&imgtype=${queryOptions.imgtype}&cr=&as_sitesearch=${queryOptions.siteSearch}&as_filetype=${queryOptions.imgtype}&tbs=${queryOptions.rights}&udm=2`;
-    const page = yield (0, utils_1.launchBrowserAndOpenPage)(url);
+    const { page, browser } = yield (0, utils_1.launchBrowserAndOpenPage)(url);
     yield page.goto(url, { waitUntil: 'networkidle0' });
     const button = yield page.$("#L2AGLb");
     if (button) {
@@ -64,7 +64,8 @@ const scrapeImages = (query, options) => __awaiter(void 0, void 0, void 0, funct
             continue;
         element.click();
         yield page.waitForSelector('.RfPPs', { visible: true });
-        yield page.waitForNetworkIdle();
+        // await page.waitForNetworkIdle();
+        yield (0, utils_1.sleep)(400);
         const src = yield page.evaluate(() => {
             const img = document.querySelector('img.sFlh5c.pT0Scc.iPVvYb');
             const source = document.querySelector('a.Hnk30e.indIKd');
@@ -93,6 +94,7 @@ const scrapeImages = (query, options) => __awaiter(void 0, void 0, void 0, funct
             results.push(src);
         }
     }
+    browser.close();
     return results;
 });
 exports.scrapeImages = scrapeImages;

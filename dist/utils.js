@@ -16,10 +16,12 @@ exports.getImageData = exports.launchBrowserAndOpenPage = exports.scrollToEnd = 
 const sharp_1 = __importDefault(require("sharp"));
 const puppeteer_1 = __importDefault(require("puppeteer"));
 const launchBrowserAndOpenPage = (url) => __awaiter(void 0, void 0, void 0, function* () {
-    const browser = yield puppeteer_1.default.launch({ headless: true });
+    const browser = yield puppeteer_1.default.launch({
+        headless: false
+    });
     const page = yield browser.newPage();
     yield page.goto(url);
-    return page;
+    return { browser, page };
 });
 exports.launchBrowserAndOpenPage = launchBrowserAndOpenPage;
 const isScrollable = (page) => __awaiter(void 0, void 0, void 0, function* () {

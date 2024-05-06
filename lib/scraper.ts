@@ -1,5 +1,5 @@
 import { FormatEnum } from 'sharp';
-import { isPicture, scrollToEnd, launchBrowserAndOpenPage, getImageData } from './utils';
+import { isPicture, scrollToEnd, launchBrowserAndOpenPage, getImageData, sleep } from './utils';
 import { PickOptions, PickResult } from './types/scraper';
 
 const defaultOptions: PickOptions = {
@@ -24,7 +24,7 @@ const scrapeImages = async (query: string, options?: PickOptions): Promise<PickR
 
     const url = `https://www.google.com/search?as_st=y&as_q=${query}&as_epq=&as_oq=&as_eq=&imgsz=${queryOptions.imgSize}&imgar=${queryOptions.imgar}&imgcolor=${queryOptions.imgColor}&imgtype=${queryOptions.imgtype}&cr=&as_sitesearch=${queryOptions.siteSearch}&as_filetype=${queryOptions.imgtype}&tbs=${queryOptions.rights}&udm=2`;
 
-    const page = await launchBrowserAndOpenPage(url);
+    const {page, browser} = await launchBrowserAndOpenPage(url);
 
     await page.goto(url, { waitUntil: 'networkidle0' });
 
@@ -68,7 +68,8 @@ const scrapeImages = async (query: string, options?: PickOptions): Promise<PickR
 
         element.click();
         await page.waitForSelector('.RfPPs', { visible: true });
-        await page.waitForNetworkIdle();
+        // await page.waitForNetworkIdle();
+        await sleep(400);
 
         const src = await page.evaluate(() => {
             const img = document.querySelector('img.sFlh5c.pT0Scc.iPVvYb') as HTMLImageElement;
@@ -105,6 +106,8 @@ const scrapeImages = async (query: string, options?: PickOptions): Promise<PickR
         }
         
     }
+
+    browser.close();
     
     return results;
 };

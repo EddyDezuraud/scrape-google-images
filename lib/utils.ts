@@ -2,12 +2,16 @@ import sharp from 'sharp';
 import puppeteer, { Page} from 'puppeteer';
 
 const launchBrowserAndOpenPage = async (url: string) => {
-  const browser = await puppeteer.launch({headless: true});
+  const browser = await puppeteer.launch(
+    {
+      headless: false
+    }
+  );
   const page = await browser.newPage();
 
   await page.goto(url);
 
-  return page;
+  return {browser, page};
 }
 
 const isScrollable = async (page: Page) => {
