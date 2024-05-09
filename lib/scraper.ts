@@ -3,6 +3,7 @@ import { isPicture, scrollToEnd, launchBrowserAndOpenPage, getImageData, sleep, 
 import { PickOptions, PickResult } from './types/scraper';
 import * as cheerio from 'cheerio';
 import axios from 'axios';
+import { Cluster } from 'puppeteer-cluster';
 
 const defaultOptions: PickOptions = {
     limit: 10,
@@ -16,7 +17,7 @@ const defaultOptions: PickOptions = {
     rights: '',
     metadata: true,
     imgData: false,
-    engine: 'cheerio'
+    engine: 'pupeeteer'
 };
 
 const scrapWithPuppeteer = async (url: string, options: PickOptions): Promise<PickResult[]> => {
@@ -139,51 +140,110 @@ const scrapeWithCheerio = async (url: string, options: PickOptions): Promise<Pic
     if(elementsData.length === 0) {
         return [];
     }
+
+    const cluster = await Cluster.launch({
+        concurrency: Cluster.CONCURRENCY_CONTEXT,
+        maxConcurrency: 3,
+        monitor: false,
+    });
+
+    await cluster.task(async ({ page, data }) => {
+
+        const googleImageUrl = `https://www.google.com/imgres?docid=${data.docid}&tbnid=${data.tbnid}`;
+
+        await page.setViewport({width: 1920, height: 1080});
+
+        await page.goto(googleImageUrl, { waitUntil: 'networkidle0' });
+
+        page
+            .on('console', message => console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`))
+
+        // console.log body of the page
+        const body = await page.evaluate(() => document.body.innerHTML);
+
+        console.log('body', body);
+
+        // find a button with class .nCP5yc and click on it
+
+        const button = await page.evaluate(() => {
+            const button = document.querySelector('button') as HTMLButtonElement;
+
+            // if(button) {
+            //     button.click();
+            // }
+
+            return button;
+        });
+
+        console.log('button', button?.innerHTML);
+
+        // if (button) {
+        //     await button.click();
+        //     await page.waitForNavigation({
+        //         waitUntil: 'networkidle0',
+        //     });
+        // }
+
+        // const src = await page.evaluate(() => {
+        //     const img = document.querySelector('.p7sI2 .sFlh5c') as HTMLImageElement;
+
+        //     console.log('img', img);
+
+        //     if(img) {
+        //         return {
+        //             imgData: '',
+        //             src: img.src,
+        //             description: img.alt || img.title || '',
+        //             source: data.lpage,
+        //             metadata: {
+        //                 width: 0,
+        //                 height: 0
+        //             }
+        //         };
+        //     }
+
+        //     return null;
+        // }) 
+
+        // return src
+
+        return null
+    });
+
     
-
-
     for(let i = 0; i < elementsData.length; i++) {
-
         if (options.limit && results.length >= options.limit) break;
-        
-        const el = elementsData[i];
+        const data = await cluster.execute(elementsData[i]);
 
-        const googleImageUrl = `https://www.google.com/imgres?docid=${el.docid}&tbnid=${el.tbnid}`;
+        console.log('data', data);
 
-        const response = await axios.get(googleImageUrl, {
-            headers: {
-                'User-Agent': getUserAgent()
-            }
-        });
-
-        const $2 = cheerio.load(response.data);
-        const imgSrc = $2('.p7sI2 img').first().attr('src');
-        const imgAlt = $2('.p7sI2 img').first().attr('alt');
-
-        let imgData = '';
-        let metaD = {
-            width: 0,
-            height: 0
-        };
-
-        if(options.imgData && imgSrc) {
-            const {metadata, imgBuffer} = await getImageData(imgSrc);
-
-            imgData = `data:image/${metadata.format};base64,${imgBuffer.toString('base64')}`;
-
-            metaD.width = metadata.width || 0;
-            metaD.height = metadata.height || 0;
+        if(data) {
+            results.push(data);
         }
-
-        results.push({
-            src: imgSrc || '',
-            imgData: '',
-            description: imgAlt || '',
-            source: el.lpage || '',
-            metadata: metaD
-        });
-
     }
+
+    await cluster.idle();
+    await cluster.close();
+
+    if(options.imgData) {
+        for(let i = 0; i < results.length; i++) {
+
+            const el = results[i];
+    
+            if(el.src) {
+                const {metadata, imgBuffer} = await getImageData(el.src);
+    
+                const imgData = `data:image/${metadata.format};base64,${imgBuffer.toString('base64')}`;
+    
+                el.metadata.width = metadata.width || 0;
+                el.metadata.height = metadata.height || 0;
+                el.metadata.format = metadata.format as unknown as FormatEnum;
+                el.imgData = imgData;
+            }
+           
+        }
+    }
+    
     return results;
 }
 

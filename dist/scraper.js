@@ -39,6 +39,7 @@ exports.scrapeImages = void 0;
 const utils_1 = require("./utils");
 const cheerio = __importStar(require("cheerio"));
 const axios_1 = __importDefault(require("axios"));
+const puppeteer_cluster_1 = require("puppeteer-cluster");
 const defaultOptions = {
     limit: 10,
     imgSize: '',
@@ -51,7 +52,7 @@ const defaultOptions = {
     rights: '',
     metadata: true,
     imgData: false,
-    engine: 'cheerio'
+    engine: 'pupeeteer'
 };
 const scrapWithPuppeteer = (url, options) => __awaiter(void 0, void 0, void 0, function* () {
     const { page, browser } = yield (0, utils_1.launchBrowserAndOpenPage)(url);
@@ -143,37 +144,78 @@ const scrapeWithCheerio = (url, options) => __awaiter(void 0, void 0, void 0, fu
     if (elementsData.length === 0) {
         return [];
     }
+    const cluster = yield puppeteer_cluster_1.Cluster.launch({
+        concurrency: puppeteer_cluster_1.Cluster.CONCURRENCY_CONTEXT,
+        maxConcurrency: 3,
+        monitor: false,
+    });
+    yield cluster.task((_a) => __awaiter(void 0, [_a], void 0, function* ({ page, data }) {
+        const googleImageUrl = `https://www.google.com/imgres?docid=${data.docid}&tbnid=${data.tbnid}`;
+        yield page.setViewport({ width: 1920, height: 1080 });
+        yield page.goto(googleImageUrl, { waitUntil: 'networkidle0' });
+        page
+            .on('console', message => console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`));
+        // console.log body of the page
+        const body = yield page.evaluate(() => document.body.innerHTML);
+        console.log('body', body);
+        // find a button with class .nCP5yc and click on it
+        const button = yield page.evaluate(() => {
+            const button = document.querySelector('button');
+            // if(button) {
+            //     button.click();
+            // }
+            return button;
+        });
+        console.log('button', button === null || button === void 0 ? void 0 : button.innerHTML);
+        // if (button) {
+        //     await button.click();
+        //     await page.waitForNavigation({
+        //         waitUntil: 'networkidle0',
+        //     });
+        // }
+        // const src = await page.evaluate(() => {
+        //     const img = document.querySelector('.p7sI2 .sFlh5c') as HTMLImageElement;
+        //     console.log('img', img);
+        //     if(img) {
+        //         return {
+        //             imgData: '',
+        //             src: img.src,
+        //             description: img.alt || img.title || '',
+        //             source: data.lpage,
+        //             metadata: {
+        //                 width: 0,
+        //                 height: 0
+        //             }
+        //         };
+        //     }
+        //     return null;
+        // }) 
+        // return src
+        return null;
+    }));
     for (let i = 0; i < elementsData.length; i++) {
         if (options.limit && results.length >= options.limit)
             break;
-        const el = elementsData[i];
-        const googleImageUrl = `https://www.google.com/imgres?docid=${el.docid}&tbnid=${el.tbnid}`;
-        const response = yield axios_1.default.get(googleImageUrl, {
-            headers: {
-                'User-Agent': (0, utils_1.getUserAgent)()
-            }
-        });
-        const $2 = cheerio.load(response.data);
-        const imgSrc = $2('.p7sI2 img').first().attr('src');
-        const imgAlt = $2('.p7sI2 img').first().attr('alt');
-        let imgData = '';
-        let metaD = {
-            width: 0,
-            height: 0
-        };
-        if (options.imgData && imgSrc) {
-            const { metadata, imgBuffer } = yield (0, utils_1.getImageData)(imgSrc);
-            imgData = `data:image/${metadata.format};base64,${imgBuffer.toString('base64')}`;
-            metaD.width = metadata.width || 0;
-            metaD.height = metadata.height || 0;
+        const data = yield cluster.execute(elementsData[i]);
+        console.log('data', data);
+        if (data) {
+            results.push(data);
         }
-        results.push({
-            src: imgSrc || '',
-            imgData: '',
-            description: imgAlt || '',
-            source: el.lpage || '',
-            metadata: metaD
-        });
+    }
+    yield cluster.idle();
+    yield cluster.close();
+    if (options.imgData) {
+        for (let i = 0; i < results.length; i++) {
+            const el = results[i];
+            if (el.src) {
+                const { metadata, imgBuffer } = yield (0, utils_1.getImageData)(el.src);
+                const imgData = `data:image/${metadata.format};base64,${imgBuffer.toString('base64')}`;
+                el.metadata.width = metadata.width || 0;
+                el.metadata.height = metadata.height || 0;
+                el.metadata.format = metadata.format;
+                el.imgData = imgData;
+            }
+        }
     }
     return results;
 });
@@ -183,6 +225,7 @@ const scrapeImages = (query, options) => __awaiter(void 0, void 0, void 0, funct
     if (options && options.limit && options.limit > 100)
         throw new Error('Limit must be less than 100');
     const queryOptions = Object.assign(Object.assign({}, defaultOptions), (options || {}));
+    query = query.replace(/&/g, '%26');
     const url = `https://www.google.com/search?as_st=y&as_q=${query}&as_epq=&as_oq=&as_eq=&imgsz=${queryOptions.imgSize}&imgar=${queryOptions.imgar}&imgcolor=${queryOptions.imgColor}&imgtype=${queryOptions.imgType}&cr=&as_sitesearch=${queryOptions.siteSearch}&as_filetype=${queryOptions.fileType}&tbs=${queryOptions.rights}&udm=2`;
     if (queryOptions.engine === 'puppeteer') {
         return yield scrapWithPuppeteer(url, queryOptions);

@@ -31,7 +31,7 @@ const options = {
     rights: '',
     metadata: true,
     imgData: false,
-    engine: 'cheerio'
+    engine: 'pupeeteer'
 };
 
 const images = await scrapeImages(query, options);
@@ -41,21 +41,21 @@ const images = await scrapeImages(query, options);
 ## Options 
 The `pick` function accepts an optional `options` object with the following properties:
 
-| Option       | Type      | Default   | Description                                                                               |
-| ------------ | --------- | -------   | ----------------------------------------------------------------------------------------- |
-| `limit`      | `number`  | `10`      | Maximum number of images to retrieve. (max: 100)                                          |
-| `imgSize`    | `string`  | `''`      | Filter images by size (e.g., `'l'`, `'m'`, `'i'`, `'qsvga'`, `'vga'`, `'svga'`, `'xga'`). |
-| `imgType`    | `string`  | `''`      | Filter images by type (e.g., `'clipart'`, `'face'`, `'lineart'`, `'stock'`, `'photo'`).   |
-| `imgColor`   | `string`  | `''`      | Filter images by color (e.g., `'mono'`, `'gray'`, `'color'`, `'trans'`).                  |
-| `imgar`      | `string`  | `''`      | Filter images by aspect ratio (e.g., `'t'`, `'s'`, `'w'`, `'xw'`)                         |
-| `fileType`   | `string`  | `''`      | Filter images by file type (e.g., `'jpg'`, `'gif'`, `'png'`, `'bmp'`, `'svg'`, `'webp'`). |
-| `safe`       | `boolean` | `false`   | Enable safe search filter.                                                                |
-| `siteSearch` | `string`  | `''`      | Search for images from a specific website.                                                |
-| `rights`     | `string`  | `''`      | Filter images by usage rights (e.g., `'cl'` for creative commons, `'ol'` for other).      |
-| `random`     | `boolean` | `false`   | Randomize the order of search results.                                                    |
-| `metadata`   | `boolean` | `true`    | Include image metadata in the results.                                                    |
-| `imgData`    | `boolean` | `false`   | Include base64 image data in the results.                                                 |
-| `engine`     | `string`  | `cheerio` | Lib used to scrap Google Images Data.                                                     |
+| Option       | Type      | Default     | Description                                                                               |
+| ------------ | --------- | -------     | ----------------------------------------------------------------------------------------- |
+| `limit`      | `number`  | `10`        | Maximum number of images to retrieve. (max: 100)                                          |
+| `imgSize`    | `string`  | `''`        | Filter images by size (e.g., `'l'`, `'m'`, `'i'`, `'qsvga'`, `'vga'`, `'svga'`, `'xga'`). |
+| `imgType`    | `string`  | `''`        | Filter images by type (e.g., `'clipart'`, `'face'`, `'lineart'`, `'stock'`, `'photo'`).   |
+| `imgColor`   | `string`  | `''`        | Filter images by color (e.g., `'mono'`, `'gray'`, `'color'`, `'trans'`).                  |
+| `imgar`      | `string`  | `''`        | Filter images by aspect ratio (e.g., `'t'`, `'s'`, `'w'`, `'xw'`)                         |
+| `fileType`   | `string`  | `''`        | Filter images by file type (e.g., `'jpg'`, `'gif'`, `'png'`, `'bmp'`, `'svg'`, `'webp'`). |
+| `safe`       | `boolean` | `false`     | Enable safe search filter.                                                                |
+| `siteSearch` | `string`  | `''`        | Search for images from a specific website.                                                |
+| `rights`     | `string`  | `''`        | Filter images by usage rights (e.g., `'cl'` for creative commons, `'ol'` for other).      |
+| `random`     | `boolean` | `false`     | Randomize the order of search results.                                                    |
+| `metadata`   | `boolean` | `true`      | Include image metadata in the results.                                                    |
+| `imgData`    | `boolean` | `false`     | Include base64 image data in the results.                                                 |
+| `engine`     | `string`  | `pupeeteer` | Lib used to scrap Google Images Data. `pupeeteer` or `cheerio`                            |
 
 
 ## Result 
