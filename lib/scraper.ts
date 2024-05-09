@@ -124,7 +124,11 @@ const scrapeWithCheerio = async (url: string, options: PickOptions): Promise<Pic
     // make an array of all .eA0Zlc elements and push an object with attributes data-lpage, data-ref-docid, data-docid
     const elements = Array.from($('.eA0Zlc'));
 
-    const elementsData = elements.map((element) => {
+    if (options.random) {
+        elements.sort(() => 0.5 - Math.random());
+    }
+
+    const elementsData = elements.slice(0, options.limit).map((element) => {
         return {
             lpage: $(element).attr('data-lpage'),
             docid: $(element).attr('data-ref-docid'),
@@ -136,11 +140,11 @@ const scrapeWithCheerio = async (url: string, options: PickOptions): Promise<Pic
         return [];
     }
     
-    if (options.random) {
-        elementsData.sort(() => 0.5 - Math.random());
-    }
+
 
     for(let i = 0; i < elementsData.length; i++) {
+
+        if (options.limit && results.length >= options.limit) break;
         
         const el = elementsData[i];
 
@@ -188,6 +192,7 @@ const scrapeImages = async (query: string, options?: PickOptions): Promise<PickR
     if (options && options.limit && options.limit > 100) throw new Error('Limit must be less than 100');
 
     const queryOptions = { ...defaultOptions, ...(options || {}) };
+    query = query.replace(/&/g, '%26');
 
     const url = `https://www.google.com/search?as_st=y&as_q=${query}&as_epq=&as_oq=&as_eq=&imgsz=${queryOptions.imgSize}&imgar=${queryOptions.imgar}&imgcolor=${queryOptions.imgColor}&imgtype=${queryOptions.imgType}&cr=&as_sitesearch=${queryOptions.siteSearch}&as_filetype=${queryOptions.fileType}&tbs=${queryOptions.rights}&udm=2`;
 
