@@ -1,11 +1,13 @@
 import { FormatEnum } from 'sharp';
-import { isPicture, scrollToEnd, launchBrowserAndOpenPage, getImageData, sleep } from './utils';
+import { isPicture, scrollToEnd, launchBrowserAndOpenPage, getImageData, sleep, getUserAgent } from './utils';
 import { PickOptions, PickResult } from './types/scraper';
+import * as cheerio from 'cheerio';
+import axios from 'axios';
 
 const defaultOptions: PickOptions = {
     limit: 10,
     imgSize: '',
-    imgtype: '',
+    imgType: '',
     imgColor: '',
     imgar: '',
     fileType: '',
@@ -13,16 +15,11 @@ const defaultOptions: PickOptions = {
     siteSearch: '',
     rights: '',
     metadata: true,
-    imgData: false
+    imgData: false,
+    engine: 'cheerio'
 };
 
-const scrapeImages = async (query: string, options?: PickOptions): Promise<PickResult[]> => {
-    if (!query) throw new Error('Query is required');
-    if (options && options.limit && options.limit > 100) throw new Error('Limit must be less than 100');
-
-    const queryOptions = { ...defaultOptions, ...(options || {}) };
-
-    const url = `https://www.google.com/search?as_st=y&as_q=${query}&as_epq=&as_oq=&as_eq=&imgsz=${queryOptions.imgSize}&imgar=${queryOptions.imgar}&imgcolor=${queryOptions.imgColor}&imgtype=${queryOptions.imgtype}&cr=&as_sitesearch=${queryOptions.siteSearch}&as_filetype=${queryOptions.imgtype}&tbs=${queryOptions.rights}&udm=2`;
+const scrapWithPuppeteer = async (url: string, options: PickOptions): Promise<PickResult[]> => {
 
     const {page, browser} = await launchBrowserAndOpenPage(url);
 
@@ -58,12 +55,12 @@ const scrapeImages = async (query: string, options?: PickOptions): Promise<PickR
     const results: PickResult[] = [];
 
     for (let element of elements) {
-        if (queryOptions.limit && results.length >= queryOptions.limit) break;
+        if (options.limit && results.length >= options.limit) break;
 
         const imgSrc = await element.$eval('img', (img: HTMLImageElement) => img.src);
 
         if(!imgSrc) continue;
-        if(queryOptions.imgtype === 'photo' && !isPicture(imgSrc)) continue;
+        if(options.imgType === 'photo' && !isPicture(imgSrc)) continue;
 
 
         element.click();
@@ -88,12 +85,12 @@ const scrapeImages = async (query: string, options?: PickOptions): Promise<PickR
 
 
         if (src && src.src !== '') {
-            if (queryOptions.metadata || queryOptions.imgData) {
+            if (options.metadata || options.imgData) {
                 const {metadata, imgBuffer} = await getImageData(src.src);
 
-                src.imgData = queryOptions.imgData ? `data:image/${metadata.format};base64,${imgBuffer.toString('base64')}` : '';
+                src.imgData = options.imgData ? `data:image/${metadata.format};base64,${imgBuffer.toString('base64')}` : '';
 
-                if (queryOptions.metadata && metadata) {
+                if (options.metadata && metadata) {
                     src.metadata.width = metadata.width || 0;
                     src.metadata.height = metadata.height || 0;
                     if (metadata.format) {
@@ -110,6 +107,96 @@ const scrapeImages = async (query: string, options?: PickOptions): Promise<PickR
     browser.close();
     
     return results;
+}
+
+
+const scrapeWithCheerio = async (url: string, options: PickOptions): Promise<PickResult[]> => {
+
+    const results: PickResult[] = [];
+
+    const response = await axios.get(url, {
+        headers: {
+            'User-Agent': getUserAgent()
+        }
+    });
+
+    const $ = cheerio.load(response.data);
+    // make an array of all .eA0Zlc elements and push an object with attributes data-lpage, data-ref-docid, data-docid
+    const elements = Array.from($('.eA0Zlc'));
+
+    const elementsData = elements.map((element) => {
+        return {
+            lpage: $(element).attr('data-lpage'),
+            docid: $(element).attr('data-ref-docid'),
+            tbnid: $(element).attr('data-docid')
+        };
+    });
+
+    if(elementsData.length === 0) {
+        return [];
+    }
+    
+    if (options.random) {
+        elementsData.sort(() => 0.5 - Math.random());
+    }
+
+    for(let i = 0; i < elementsData.length; i++) {
+        
+        const el = elementsData[i];
+
+        const googleImageUrl = `https://www.google.com/imgres?docid=${el.docid}&tbnid=${el.tbnid}`;
+
+        const response = await axios.get(googleImageUrl, {
+            headers: {
+                'User-Agent': getUserAgent()
+            }
+        });
+
+        const $2 = cheerio.load(response.data);
+        const imgSrc = $2('.p7sI2 img').first().attr('src');
+        const imgAlt = $2('.p7sI2 img').first().attr('alt');
+
+        let imgData = '';
+        let metaD = {
+            width: 0,
+            height: 0
+        };
+
+        if(options.imgData && imgSrc) {
+            const {metadata, imgBuffer} = await getImageData(imgSrc);
+
+            imgData = `data:image/${metadata.format};base64,${imgBuffer.toString('base64')}`;
+
+            metaD.width = metadata.width || 0;
+            metaD.height = metadata.height || 0;
+        }
+
+        results.push({
+            src: imgSrc || '',
+            imgData: '',
+            description: imgAlt || '',
+            source: el.lpage || '',
+            metadata: metaD
+        });
+
+    }
+    return results;
+}
+
+const scrapeImages = async (query: string, options?: PickOptions): Promise<PickResult[]> => {
+    if (!query) throw new Error('Query is required');
+    if (options && options.limit && options.limit > 100) throw new Error('Limit must be less than 100');
+
+    const queryOptions = { ...defaultOptions, ...(options || {}) };
+
+    const url = `https://www.google.com/search?as_st=y&as_q=${query}&as_epq=&as_oq=&as_eq=&imgsz=${queryOptions.imgSize}&imgar=${queryOptions.imgar}&imgcolor=${queryOptions.imgColor}&imgtype=${queryOptions.imgType}&cr=&as_sitesearch=${queryOptions.siteSearch}&as_filetype=${queryOptions.fileType}&tbs=${queryOptions.rights}&udm=2`;
+
+    
+    if(queryOptions.engine === 'puppeteer') {
+        return await scrapWithPuppeteer(url, queryOptions);
+    }
+
+    return await scrapeWithCheerio(url, queryOptions);
 };
 
 export { scrapeImages };

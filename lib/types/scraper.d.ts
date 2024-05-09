@@ -14,11 +14,13 @@ declare type AsRights = "" | "cl" | "ol";
 
 declare type SharpFormat = 'jpeg' | 'png' | 'webp' | 'gif' | 'svg' | ''; 
 
+declare type Engine = 'puppeteer' | 'cheerio';
+
 
 interface PickOptions {
     limit?: number;
     imgSize?: string | ImgSize;
-    imgtype?: string | ImgType;
+    imgType?: string | ImgType;
     imgColor?: string | ImgColor;
     imgar?: string | Imgar;
     fileType?: string | FileType;
@@ -28,6 +30,7 @@ interface PickOptions {
     random?: boolean;
     metadata?: boolean;
     imgData?: boolean;
+    engine?: string | Engine;
 }
 
 
