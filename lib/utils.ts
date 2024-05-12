@@ -1,5 +1,8 @@
 import sharp from 'sharp';
-import puppeteer, { Page} from 'puppeteer';
+import { Page} from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+
+import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 
 const getUserAgent = () => {
   const agents = [
@@ -10,9 +13,11 @@ const getUserAgent = () => {
   return agents[index]
 }
 const launchBrowserAndOpenPage = async (url: string) => {
+  puppeteer.use(StealthPlugin())
+
   const browser = await puppeteer.launch(
     {
-      headless: false
+      headless: true
     }
   );
   const page = await browser.newPage();

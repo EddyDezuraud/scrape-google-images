@@ -1,6 +1,6 @@
 {
   "name": "scrape-google-images",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A Node.js package for scraping images from Google Images",
   "main": "dist/scraper.js",
   "directories": {
@@ -31,6 +31,8 @@
     "cheerio": "^1.0.0-rc.12",
     "puppeteer": "^22.6.4",
     "puppeteer-cluster": "^0.24.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "sharp": "^0.33.3"
   }
 }

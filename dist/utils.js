@@ -14,7 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserAgent = exports.getImageData = exports.launchBrowserAndOpenPage = exports.scrollToEnd = exports.sleep = exports.isPicture = void 0;
 const sharp_1 = __importDefault(require("sharp"));
-const puppeteer_1 = __importDefault(require("puppeteer"));
+const puppeteer_extra_1 = __importDefault(require("puppeteer-extra"));
+const puppeteer_extra_plugin_stealth_1 = __importDefault(require("puppeteer-extra-plugin-stealth"));
 const getUserAgent = () => {
     const agents = [
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
@@ -24,8 +25,9 @@ const getUserAgent = () => {
 };
 exports.getUserAgent = getUserAgent;
 const launchBrowserAndOpenPage = (url) => __awaiter(void 0, void 0, void 0, function* () {
-    const browser = yield puppeteer_1.default.launch({
-        headless: false
+    puppeteer_extra_1.default.use((0, puppeteer_extra_plugin_stealth_1.default)());
+    const browser = yield puppeteer_extra_1.default.launch({
+        headless: true
     });
     const page = yield browser.newPage();
     yield page.goto(url);
